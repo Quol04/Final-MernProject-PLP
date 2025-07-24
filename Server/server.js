@@ -6,6 +6,9 @@ const cors =require( "cors");
 const connectDB = require("./config/db.js");
 const authRoutes= require( "./routes/authRoutes.js");
 const courseRoutes =require( "./routes/courseRoutes.js");
+const lessonRoutes = require("./routes/lessonRoutes.js");
+
+
 
 dotenv.config();
 
@@ -16,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/lessons", lessonRoutes);
 
 const PORT = process.env.PORT || 5000;
 
