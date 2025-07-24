@@ -1,8 +1,11 @@
-const express = require( "express");
-const { createLesson, getLessonsByCourse } = require( "../controllers/lessonController.js");
-const { protect, requireRole } = require( "../middleware/authMiddleware.js");
-const upload = require( "../utils/fileUploader.js");
-const { markLessonComplete } = require( "../controllers/lessonController.js");
+const express = require("express");
+const { 
+  createLesson, 
+  getLessonsByCourse, 
+  markLessonComplete 
+} = require("../controllers/lessonController");
+const { protect, requireRole } = require("../middlewares/authMiddleware");
+const upload = require("../utils/fileUploader");
 
 const router = express.Router();
 
