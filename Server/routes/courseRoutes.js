@@ -1,9 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-// Placeholder route for courses
-router.get("/", (req, res) => {
-  res.json({ message: "Course routes working" });
-});
+const {
+  createCourse,
+  getAllCourses,
+  getCourseById,
+  enrollInCourse
+} = require("../controllers/courseController.js");
+const { protect, requireRole } = require( "../middleware/authMiddleware.js");
+
+
+// Public
+router.get("/", getAllCourses);
+router.get("/:id", getCourseById);
+
+// Protected
+router.post("/", protect, requireRole("instructor"), createCourse);
+router.post("/:id/enroll", protect, requireRole("student"), enrollInCourse);
+
 
 module.exports = router;
