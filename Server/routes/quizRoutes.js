@@ -1,6 +1,6 @@
-const express =require( "express");
-const { createQuiz, getQuizByLesson, submitQuiz } =require( "../controllers/quizController.js");
-const { protect, requireRole } =require( "../middleware/authMiddleware.js");
+const express = require("express");
+const { createQuiz, getQuizByLesson, submitQuiz } = require("../controllers/quizController");
+const { protect, requireRole } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 

@@ -1,8 +1,8 @@
-const Course = require( "../models/Course.js");
-const User = require( "../models/User.js");
+const Course = require("../models/Course");
+const User = require("../models/User");
 
 // Create a new course
-export const createCourse = async (req, res) => {
+const createCourse = async (req, res) => {
   try {
     const { title, description, category, price } = req.body;
 
@@ -22,7 +22,7 @@ export const createCourse = async (req, res) => {
 };
 
 // Get all courses
-export const getAllCourses = async (req, res) => {
+const getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find().populate("instructor", "name email");
     res.json(courses);
@@ -32,7 +32,7 @@ export const getAllCourses = async (req, res) => {
 };
 
 // Get a single course by ID
-export const getCourseById = async (req, res) => {
+const getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
       .populate("instructor", "name")
@@ -45,7 +45,7 @@ export const getCourseById = async (req, res) => {
 };
 
 // Enroll in a course
-export const enrollInCourse = async (req, res) => {
+const enrollInCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     const user = await User.findById(req.user.userId);
@@ -66,4 +66,11 @@ export const enrollInCourse = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+module.exports = {
+  createCourse,
+  getAllCourses,
+  getCourseById,
+  enrollInCourse
 };

@@ -3,11 +3,11 @@ const mongoose =require( "mongoose");
 
 const dotenv =require( "dotenv");
 const cors =require( "cors");
-const connectDB = require("./config/db.js");
-const authRoutes= require( "./routes/authRoutes.js");
-const courseRoutes =require( "./routes/courseRoutes.js");
-const lessonRoutes = require("./routes/lessonRoutes.js");
-const quizRoutes=require( "./routes/quizRoutes.js");
+const connectDB = require("./config/db");
+const authRoutes= require( "./routes/authRoutes");
+const courseRoutes =require( "./routes/courseRoutes");
+const lessonRoutes = require("./routes/lessonRoutes");
+const quizRoutes=require( "./routes/quizRoutes");
 
 
 

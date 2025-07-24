@@ -1,8 +1,9 @@
-const Quiz =require( "../models/Quiz.js");
-const Lesson =require( "../models/Lesson.js");
+const Quiz = require("../models/Quiz");
+const Lesson = require("../models/Lesson");
+const User = require("../models/User");
 
 // Create quiz (instructor only)
-export const createQuiz = async (req, res) => {
+const createQuiz = async (req, res) => {
   try {
     const { lessonId, questions } = req.body;
 
@@ -19,7 +20,7 @@ export const createQuiz = async (req, res) => {
 };
 
 // Get quiz for a lesson
-export const getQuizByLesson = async (req, res) => {
+const getQuizByLesson = async (req, res) => {
   try {
     const quiz = await Quiz.findOne({ lesson: req.params.lessonId });
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
@@ -30,7 +31,7 @@ export const getQuizByLesson = async (req, res) => {
 };
 
 // Submit quiz answers
-export const submitQuiz = async (req, res) => {
+const submitQuiz = async (req, res) => {
   try {
     const { answers } = req.body; // array of { questionIndex, selectedAnswer }
     const quiz = await Quiz.findOne({ lesson: req.params.lessonId });
@@ -65,6 +66,12 @@ export const submitQuiz = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+module.exports = {
+  createQuiz,
+  getQuizByLesson,
+  submitQuiz
 };
 
 

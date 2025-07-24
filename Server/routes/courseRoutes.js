@@ -6,8 +6,9 @@ const {
   getAllCourses,
   getCourseById,
   enrollInCourse
-} = require("../controllers/courseController.js");
-const { protect, requireRole } = require( "../middleware/authMiddleware.js");
+} = require("../controllers/courseController");
+
+const { protect, requireRole } = require("../middlewares/authMiddleware");
 
 
 // Public

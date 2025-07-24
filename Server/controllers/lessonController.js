@@ -1,9 +1,8 @@
-const Lesson = require( "../models/Lesson.js");
-const Course = require( "../models/Course.js");
-const User = require( "../models/User.js");
+const Lesson = require("../models/Lesson");
+const Course = require("../models/Course");
+const User = require("../models/User");
 
-
-export const createLesson = async (req, res) => {
+const createLesson = async (req, res) => {
   try {
     const { title, content, courseId } = req.body;
     const videoUrl = req.file?.path;
@@ -31,7 +30,7 @@ export const createLesson = async (req, res) => {
 };
 
 // Get all lessons of a course
-export const getLessonsByCourse = async (req, res) => {
+const getLessonsByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
     const lessons = await Lesson.find({ course: courseId });
@@ -41,9 +40,8 @@ export const getLessonsByCourse = async (req, res) => {
   }
 };
 
-
 //mark lesson as complete
-export const markLessonComplete = async (req, res) => {
+const markLessonComplete = async (req, res) => {
   try {
     const { lessonId } = req.body;
     const user = await User.findById(req.user.userId);
@@ -57,5 +55,11 @@ export const markLessonComplete = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+module.exports = {
+  createLesson,
+  getLessonsByCourse,
+  markLessonComplete
 };
 
