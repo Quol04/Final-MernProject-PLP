@@ -8,23 +8,29 @@ const authRoutes= require( "./routes/authRoutes");
 const courseRoutes =require( "./routes/courseRoutes");
 const lessonRoutes = require("./routes/lessonRoutes");
 const quizRoutes=require( "./routes/quizRoutes");
-
-
+const adminRoutes =require( "./routes/adminRoutes.js");
+const app = express();
 
 dotenv.config();
 
-const app = express();
+
+
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
 
 
 app.use("/api/auth", authRoutes);
+
 app.use("/api/courses", courseRoutes);
+
 app.use("/api/lessons", lessonRoutes);
+
 app.use("/api/quizzes", quizRoutes);
 
+app.use("/api/admin", adminRoutes);
 
-const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     connectDB();
