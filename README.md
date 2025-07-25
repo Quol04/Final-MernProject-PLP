@@ -15,8 +15,7 @@ A full-stack MERN (MongoDB, Express.js, React.js, Node.js) application for onlin
 - [API Endpoints](#-api-endpoints)
 - [Project Structure](#-project-structure)
 - [Usage Guide](#-usage-guide)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
+
 
 ---
 
@@ -45,10 +44,6 @@ A full-stack MERN (MongoDB, Express.js, React.js, Node.js) application for onlin
 
 ---
 
-### Tools
-
-- **Nodemon** - Development server auto-restart
-
 ## 📋 Prerequisites
 
 Before running this application, make sure you have the following installed:
@@ -56,7 +51,7 @@ Before running this application, make sure you have the following installed:
 - **Node.js** (v14 or higher) - [Download here](https://nodejs.org/)
 - **MongoDB** - [Download here](https://www.mongodb.com/try/download/community) or use [MongoDB Atlas](https://www.mongodb.com/atlas)
 - **npm** or **yarn** - Package manager (comes with Node.js)
-- **Git** - Version control
+- **Git** - Version control (Optional)
 
 ---
 
