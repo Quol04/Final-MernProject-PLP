@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../../config/axios';
 
 const CreateCourse = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [courseData, setCourseData] = useState({
     title: '',
     description: '',
@@ -70,6 +72,20 @@ const CreateCourse = () => {
   };
 
   const nextStep = () => {
+    setError('');
+    
+    // Validate current step before proceeding
+    if (currentStep === 1) {
+      if (!courseData.title || !courseData.description || !courseData.category || !courseData.price) {
+        setError('Please fill in all required fields before proceeding');
+        return;
+      }
+      if (parseFloat(courseData.price) < 0) {
+        setError('Price cannot be negative');
+        return;
+      }
+    }
+    
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -83,35 +99,87 @@ const CreateCourse = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    // Validate required fields
+    if (!courseData.title || !courseData.description || !courseData.category || !courseData.price) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const token = localStorage.getItem('token');
-      const formData = new FormData();
       
-      // Append all course data
-      Object.keys(courseData).forEach(key => {
-        if (key === 'requirements' || key === 'learningOutcomes') {
-          formData.append(key, JSON.stringify(courseData[key].filter(item => item.trim())));
-        } else if (key === 'thumbnail' && courseData[key]) {
-          formData.append(key, courseData[key]);
-        } else {
-          formData.append(key, courseData[key]);
-        }
-      });
+      if (!token) {
+        setError('You must be logged in to create a course');
+        setLoading(false);
+        return;
+      }
+      
+      // For now, we'll send JSON data instead of FormData since we might not have file upload configured
+      const coursePayload = {
+        title: courseData.title,
+        description: courseData.description,
+        price: parseFloat(courseData.price),
+        category: courseData.category,
+        level: courseData.level,
+        duration: courseData.duration ? parseInt(courseData.duration) : undefined,
+        requirements: courseData.requirements.filter(req => req.trim()),
+        learningOutcomes: courseData.learningOutcomes.filter(outcome => outcome.trim()),
+        isPublished: courseData.isPublished
+      };
 
-      const response = await axios.post('/api/courses', formData, {
+      const response = await axios.post('/api/courses', coursePayload, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
 
       console.log('Course created:', response.data);
-      navigate('/instructor/manage-courses');
+      setSuccess('Course created successfully!');
+      
+      // Reset form after a delay
+      setTimeout(() => {
+        setCourseData({
+          title: '',
+          description: '',
+          price: '',
+          category: '',
+          level: 'beginner',
+          duration: '',
+          thumbnail: null,
+          requirements: [''],
+          learningOutcomes: [''],
+          isPublished: false
+        });
+        setCurrentStep(1);
+        setSuccess('');
+        
+        // Navigate to manage courses
+        navigate('/instructor/manage-courses');
+      }, 2000);
+      
     } catch (error) {
       console.error('Error creating course:', error);
-      alert('Error creating course. Please try again.');
+      console.error('Error response:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        setError('Session expired. Please log in again.');
+      } else if (error.response?.status === 400) {
+        setError(error.response.data.error || 'Bad request. Please check your input.');
+      } else if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else if (error.message) {
+        setError(`Error: ${error.message}`);
+      } else {
+        setError('Error creating course. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -447,8 +515,18 @@ const CreateCourse = () => {
       {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Course</h1>
-          <p className="mt-2 text-gray-600">Build an engaging course for your students</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Create New Course</h1>
+              <p className="mt-2 text-gray-600">Build an engaging course for your students</p>
+            </div>
+            <button
+              onClick={() => navigate('/instructor/dashboard')}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
 
@@ -480,6 +558,34 @@ const CreateCourse = () => {
 
         {/* Form */}
         <div className="bg-white rounded-lg shadow-md">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-t-lg p-4">
+              <div className="flex">
+                <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-t-lg p-4">
+              <div className="flex">
+                <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="ml-3">
+                  <p className="text-sm text-green-700">{success}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="p-6">
               {renderStepContent()}
@@ -503,7 +609,8 @@ const CreateCourse = () => {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                  disabled={loading}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -511,8 +618,14 @@ const CreateCourse = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                  className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center"
                 >
+                  {loading && (
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
                   {loading ? 'Creating...' : 'Create Course'}
                 </button>
               )}

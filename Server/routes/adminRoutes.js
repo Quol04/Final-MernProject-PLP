@@ -11,7 +11,8 @@ const { protect, requireRole } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Protect all admin routes
-router.use(protect, requireRole("admin"));
+router.use(protect);
+router.use(requireRole("admin"));
 
 // Summary stats
 router.get("/stats", getDashboardStats);

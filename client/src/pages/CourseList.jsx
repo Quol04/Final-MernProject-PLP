@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../config/axios';
 
 const CourseList = () => {
   const [courses, setCourses] = useState([]);
@@ -18,47 +18,74 @@ const CourseList = () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/courses');
-      setCourses(response.data);
+      // Ensure response.data is an array
+      const coursesData = Array.isArray(response.data) ? response.data : [];
+      setCourses(coursesData);
       setError('');
     } catch (err) {
       setError('Failed to fetch courses. Please try again.');
       console.error('Error fetching courses:', err);
+      setCourses([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
   // Filter and sort courses
-  const filteredCourses = courses
+  const filteredCourses = Array.isArray(courses) ? courses
     .filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = filterCategory === '' || course.category === filterCategory;
+      const matchesSearch = course?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           course?.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = filterCategory === '' || course?.category === filterCategory;
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'price':
-          return a.price - b.price;
+          return (a?.price || 0) - (b?.price || 0);
         case 'students':
-          return (b.students?.length || 0) - (a.students?.length || 0);
+          return (b?.students?.length || 0) - (a?.students?.length || 0);
         case 'title':
         default:
-          return a.title.localeCompare(b.title);
+          return (a?.title || '').localeCompare(b?.title || '');
       }
-    });
+    }) : [];
 
   // Get unique categories
-  const categories = [...new Set(courses.map(course => course.category).filter(Boolean))];
+  const categories = Array.isArray(courses) ? 
+    [...new Set(courses.map(course => course?.category).filter(Boolean))] : [];
 
   const formatPrice = (price) => {
-    return price === 0 ? 'Free' : `$${price.toFixed(2)}`;
+    return (!price || price === 0) ? 'Free' : `$${parseFloat(price).toFixed(2)}`;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">All Courses</h1>
+            <p className="text-xl text-gray-600">Discover and learn new skills with our comprehensive courses</p>
+          </div>
+          
+          {/* Loading skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-48 bg-gray-200 animate-pulse"></div>
+                <div className="p-6">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-4"></div>
+                  <div className="flex justify-between items-center">
+                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -130,35 +157,35 @@ const CourseList = () => {
               <div key={course._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 {/* Course Image Placeholder */}
                 <div className="h-48 bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white text-3xl font-bold">{course.title.charAt(0)}</span>
+                  <span className="text-white text-3xl font-bold">{course?.title?.charAt(0) || 'C'}</span>
                 </div>
                 
                 <div className="p-6">
                   {/* Category Badge */}
-                  {course.category && (
+                  {course?.category && (
                     <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full mb-3">
                       {course.category}
                     </span>
                   )}
                   
                   {/* Course Title */}
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{course.title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{course?.title || 'Course Title'}</h3>
                   
                   {/* Course Description */}
                   <p className="text-gray-600 mb-4 line-clamp-3">
-                    {course.description || 'Learn valuable skills with this comprehensive course.'}
+                    {course?.description || 'Learn valuable skills with this comprehensive course.'}
                   </p>
                   
                   {/* Instructor */}
                   <div className="flex items-center mb-4">
                     <div className="flex-shrink-0 h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
                       <span className="text-gray-700 text-sm font-medium">
-                        {course.instructor?.name?.charAt(0) || 'I'}
+                        {course?.instructor?.name?.charAt(0) || 'I'}
                       </span>
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-900">
-                        {course.instructor?.name || 'Instructor'}
+                        {course?.instructor?.name || 'Instructor'}
                       </p>
                     </div>
                   </div>
@@ -169,23 +196,23 @@ const CourseList = () => {
                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      {course.students?.length || 0} students
+                      {course?.students?.length || 0} students
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
-                      {course.lessons?.length || 0} lessons
+                      {course?.lessons?.length || 0} lessons
                     </div>
                   </div>
                   
                   {/* Price and CTA */}
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-indigo-600">
-                      {formatPrice(course.price)}
+                      {formatPrice(course?.price)}
                     </span>
                     <Link
-                      to={`/courses/${course._id}`}
+                      to={`/courses/${course?._id}`}
                       className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-300"
                     >
                       View Details

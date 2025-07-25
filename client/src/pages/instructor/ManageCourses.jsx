@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../../config/axios';
 
 const ManageCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -18,24 +18,27 @@ const ManageCourses = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('/api/courses', {
+      // Use the instructor-specific endpoint to get only the instructor's courses
+      const response = await axios.get('/api/courses/instructor/my-courses', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // Add mock instructor data to courses
       const coursesWithMockData = response.data.map(course => ({
         ...course,
-        studentsEnrolled: Math.floor(Math.random() * 200) + 10,
+        studentsEnrolled: course.students?.length || Math.floor(Math.random() * 200) + 10,
         revenue: Math.floor(Math.random() * 5000) + 500,
         rating: (Math.random() * 2 + 3).toFixed(1), // 3.0 to 5.0
         totalRatings: Math.floor(Math.random() * 100) + 5,
-        createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-        isPublished: Math.random() > 0.3 // 70% published
+        createdAt: course.createdAt || new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+        isPublished: course.isPublished !== undefined ? course.isPublished : Math.random() > 0.3 // 70% published
       }));
       
       setCourses(coursesWithMockData);
     } catch (error) {
       console.error('Error fetching courses:', error);
+      // If there's an error, show empty state instead of crash
+      setCourses([]);
     } finally {
       setLoading(false);
     }
@@ -44,19 +47,40 @@ const ManageCourses = () => {
   const toggleCourseStatus = async (courseId, currentStatus) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`/api/courses/${courseId}`, 
-        { isPublished: !currentStatus },
+      
+      // Option 1: Use the dedicated toggle endpoint
+      const response = await axios.patch(`/api/courses/${courseId}/publish`, 
+        {}, // No body needed as it just toggles
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
+      // Option 2: Alternative - use general update endpoint
+      // const response = await axios.patch(`/api/courses/${courseId}`, 
+      //   { isPublished: !currentStatus },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      
+      // Update the local state with the new status
       setCourses(courses.map(course => 
         course._id === courseId 
           ? { ...course, isPublished: !currentStatus }
           : course
       ));
+      
+      // Show success message
+      const action = !currentStatus ? 'published' : 'unpublished';
+      alert(`Course ${action} successfully!`);
     } catch (error) {
       console.error('Error updating course status:', error);
-      alert('Error updating course status');
+      if (error.response?.status === 404) {
+        alert('Course not found');
+      } else if (error.response?.status === 403) {
+        alert('You can only modify your own courses');
+      } else if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert('Error updating course status. Please try again.');
+      }
     }
   };
 
@@ -71,10 +95,20 @@ const ManageCourses = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      // Remove the course from the local state
       setCourses(courses.filter(course => course._id !== courseId));
+      alert('Course deleted successfully!');
     } catch (error) {
       console.error('Error deleting course:', error);
-      alert('Error deleting course');
+      if (error.response?.status === 404) {
+        alert('Course not found');
+      } else if (error.response?.status === 403) {
+        alert('You can only delete your own courses');
+      } else if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert('Error deleting course. Please try again.');
+      }
     }
   };
 
