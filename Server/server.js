@@ -8,7 +8,7 @@ const authRoutes= require( "./routes/authRoutes");
 const courseRoutes =require( "./routes/courseRoutes");
 const lessonRoutes = require("./routes/lessonRoutes");
 const quizRoutes=require( "./routes/quizRoutes");
-const adminRoutes =require( "./routes/adminRoutes.js");
+const adminRoutes = require( "./routes/adminRoutes");
 const app = express();
 
 dotenv.config();

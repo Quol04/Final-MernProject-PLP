@@ -1,12 +1,12 @@
-const express =require( "express");
+const express = require("express");
 const {
   getDashboardStats,
   getAllUsers,
   deleteUser,
   getAllCourses,
   deleteCourse
-} =require( "../controllers/adminController.js");
-const { protect, requireRole } =require( "../middleware/authMiddleware.js");
+} = require("../controllers/adminController");
+const { protect, requireRole } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 

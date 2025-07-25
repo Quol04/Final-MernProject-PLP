@@ -1,6 +1,6 @@
-const User = require("../models/User.js");
-const Course = require("../models/Course.js");
-const Lesson = require("../models/Lesson.js");
+const User = require("../models/User");
+const Course = require("../models/Course");
+const Lesson = require("../models/Lesson");
 
 // Dashboard summary
  const getDashboardStats = async (req, res) => {
